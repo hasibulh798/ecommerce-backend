@@ -1,0 +1,41 @@
+import morgan from "morgan";
+import cors from "cors"
+import dotenv from "dotenv"
+import colors from "colors"
+import express from "express";
+import connectDB from "./config/db.js";
+
+
+// dot env config
+dotenv.config()
+
+//database connection
+connectDB();
+
+// rest object
+const app = express();
+
+// middlewares
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(cors());
+
+// routes import
+import testRoute from "./routes/testRoute.js"
+import userRoute from "./routes/userRoute.js"
+
+// route
+app.use('/api/v1', testRoute)
+app.use('/api/v1/user', userRoute)
+
+app.get('/', (req, res) => {
+    return res.status(200).send("<h1>Welcome to node server</h1>")
+})
+
+// port
+const PORT = process.env.PORT || 8080;
+
+//listen
+app.listen(PORT, () =>{
+    console.log(`server running on port ${process.env.PORT}`.bgMagenta.white);  
+})
