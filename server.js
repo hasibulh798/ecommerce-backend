@@ -1,13 +1,13 @@
 import morgan from "morgan";
-import cors from "cors"
-import dotenv from "dotenv"
-import colors from "colors"
+import cors from "cors";
+import dotenv from "dotenv";
+import colors from "colors";
 import express from "express";
 import connectDB from "./config/db.js";
-
+import cookieParser from "cookie-parser";
 
 // dot env config
-dotenv.config()
+dotenv.config();
 
 //database connection
 connectDB();
@@ -19,23 +19,27 @@ const app = express();
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 
 // routes import
-import testRoute from "./routes/testRoute.js"
-import userRoute from "./routes/userRoute.js"
+import testRoute from "./routes/testRoute.js";
+import userRoute from "./routes/userRoute.js";
 
 // route
-app.use('/api/v1', testRoute)
-app.use('/api/v1/user', userRoute)
+app.use("/api/v1", testRoute);
+app.use("/api/v1/user", userRoute);
 
-app.get('/', (req, res) => {
-    return res.status(200).send("<h1>Welcome to node server</h1>")
-})
+app.get("/", (req, res) => {
+  return res.status(200).send("<h1>Welcome to node server</h1>");
+});
 
 // port
 const PORT = process.env.PORT || 8080;
 
 //listen
-app.listen(PORT, () =>{
-    console.log(`server running on port ${process.env.PORT}`.bgMagenta.white);  
-})
+app.listen(PORT, () => {
+  console.log(
+    `server running on port ${process.env.PORT} on ${process.env.NODE_ENV} mode`
+      .bgMagenta.white
+  );
+});

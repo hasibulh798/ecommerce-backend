@@ -59,7 +59,7 @@ export const loginController = async (req, res) => {
     if (!email || !password) {
       return res.status(500).send({
         success: false,
-        massege: "Add email or passord",
+        message: "Add email or passord",
       });
     }
     // check user
@@ -67,28 +67,80 @@ export const loginController = async (req, res) => {
     if (!user) {
       res.status(404).send({
         success: false,
-        massege: "User not found!",
+        message: "User not found!",
       });
     }
 
     // check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      res.status(500).send({
+      return res.status(500).send({
         success: false,
-        massege: "Invalid password",
+        message: "Invalid password",
       });
     }
+
+    const token = user.generateToken();
+    res
+      .status(200)
+      .cookie("token", token, {
+        expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+        secure: process.env.NODE_ENV === "development" ? true : false,
+        httpOnly: process.env.NODE_ENV === "development" ? true : false,
+      })
+      .send({
+        success: true,
+        message: "Login successfully..",
+        token,
+      });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in API",
+      error,
+    });
+  }
+};
+
+// profile controller
+export const getUserProfileController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id);
+    user.password = undefined;
+
     res.status(200).send({
       success: true,
-      massege: "Login successfully..",
+      message: "Profile fetch successfully",
       user,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       success: false,
-      massege: "Error in API",
+      message: "Error in profile API",
+      error,
+    });
+  }
+};
+
+// Logout Controller
+export const logoutController = async (req, res) => {
+  try {
+    res
+      .status(200)
+      .cookie("token", " ", {
+        expires: new Date(Date.now()),
+        secure: process.env.NODE_ENV === "development" ? true : false,
+        httpOnly: process.env.NODE_ENV === "development" ? true : false,
+      })
+      .send({
+        success: true,
+        message: "Logout successfully..",
+      });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in logout API",
+      error,
     });
   }
 };
