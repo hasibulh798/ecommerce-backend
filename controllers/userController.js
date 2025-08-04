@@ -1,5 +1,6 @@
 import { compare } from "bcrypt";
 import userModel from "../models/userModel.js";
+
 export const registerController = async (req, res) => {
   try {
     const { name, email, password, address, city, country, phone } = req.body;
@@ -140,6 +141,69 @@ export const logoutController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in logout API",
+      error,
+    });
+  }
+};
+
+// profile update controller
+export const profileUpdateController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id);
+    const { name, email, address, city, country, phone } = req.body;
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (address) user.address = address;
+    if (city) user.city = city;
+    if (country) user.country = country;
+    if (phone) user.phone = phone;
+    // save user
+    await user.save();
+    res.status(200).send({
+      success: true,
+      message: "profile update successfully",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in profile update API",
+      error,
+    });
+  }
+};
+
+// update password controller
+export const updatePassController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id);
+    const { oldPassword, newPassword } = req.body;
+    //validation
+    if (!oldPassword || !newPassword) {
+      return res.status(500).send({
+        success: false,
+        message: "Please provide old or new password",
+      });
+    }
+    const isMatch = await user.comparePassword(oldPassword);
+    //validation
+    if (!isMatch) {
+      return res.status(500).send({
+        success: false,
+        message: "Invalid old password",
+      });
+    }
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).send({
+      success: true,
+      message: "password update successfully",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in password update API",
       error,
     });
   }
