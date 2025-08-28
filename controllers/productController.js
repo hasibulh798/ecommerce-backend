@@ -6,10 +6,17 @@ import userModel from "../models/userModel.js";
 // all product controller
 export const getAllProductController = async (req, res) => {
   try {
-    const products = await productModel.find({});
+    const { keyword, category } = req.query;
+    const products = await productModel.find({
+      name: {
+        $regex: keyword ? keyword : "",
+        $options: "i",
+      },
+    });
     res.status(200).send({
       success: true,
       message: "All product get successfully",
+      totalProduct: products.length,
       products,
     });
   } catch (error) {
@@ -21,6 +28,23 @@ export const getAllProductController = async (req, res) => {
   }
 };
 
+// Top three product
+export const getTopThreeProductController = async (req, res) => {
+  try {
+    const product = await productModel.find({}).sort({ rating: -1 }).limit(3);
+    res.status(200).send({
+      success: true,
+      message: "Top three product showed",
+      product,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in Top three product API",
+      error,
+    });
+  }
+};
 // get single product controller
 export const singleProductController = async (req, res) => {
   try {
@@ -273,6 +297,52 @@ export const deleteProductController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in Delete API",
+      error: error.message,
+    });
+  }
+};
+
+// product review controller
+
+export const productReviewController = async (req, res) => {
+  try {
+    const { comment, rating } = req.body;
+    // find product
+    const product = await productModel.findById(req.params.id);
+    // check prev review
+    const alreadyReviewed = product.reviews.find(
+      (r) => r.user.toString() === req.user._id.toString()
+    );
+    if (alreadyReviewed) {
+      return res.status(401).send({
+        success: false,
+        message: "Already reviewed",
+      });
+    }
+    // making review
+    const review = {
+      name: req.user.name,
+      comment,
+      rating: Number(rating),
+      user: req.user._id,
+    };
+    // new review push in array
+    product.reviews.push(review);
+    // num of reviews
+    (product.numReviews = product.reviews.length),
+      // no of ratings
+      (product.rating =
+        product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+        product.reviews.length);
+    await product.save();
+    res.status(200).send({
+      success: true,
+      message: "Review added!",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in product review API",
       error: error.message,
     });
   }

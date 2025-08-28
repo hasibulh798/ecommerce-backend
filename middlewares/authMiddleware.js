@@ -5,7 +5,6 @@ export const isAuth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
 
-    // Token না থাকলে
     if (!token) {
       return res.status(401).send({
         success: false,
@@ -13,10 +12,10 @@ export const isAuth = async (req, res, next) => {
       });
     }
 
-    // Token verify করা
+    // Token verify
     const decodeData = JWT.verify(token, process.env.JWT_SECRET);
 
-    // User খোঁজা
+    // User finding
     const user = await userModel.findById(decodeData._id);
 
     if (!user) {
@@ -35,4 +34,16 @@ export const isAuth = async (req, res, next) => {
       message: "Invalid or expired token",
     });
   }
+};
+
+// admin part
+
+export const isAdmin = async (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(401).send({
+      success: false,
+      message: "Admin only",
+    });
+  }
+  next();
 };

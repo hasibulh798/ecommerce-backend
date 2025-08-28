@@ -6,6 +6,8 @@ import express from "express";
 import connectDB from "./config/db.js";
 import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
 
 // dot env config
 dotenv.config();
@@ -24,10 +26,16 @@ connectDB();
 const app = express();
 
 // middlewares
+app.use(helmet());
+
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
+app.use((req, res, next) => {
+  req.body = mongoSanitize.sanitize(req.body);
+  next();
+});
 
 // routes import
 import testRoute from "./routes/testRoute.js";
@@ -35,6 +43,7 @@ import userRoute from "./routes/userRoute.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import { paymentIntegrationController } from "./controllers/paymentIntegrationController.js";
 
 // route
 app.use("/api/v1", testRoute);
@@ -47,6 +56,8 @@ app.get("/", (req, res) => {
   return res.status(200).send("<h1>Welcome to node server</h1>");
 });
 
+//Payment integration route
+app.post("/init", paymentIntegrationController);
 // port
 const PORT = process.env.PORT || 8080;
 

@@ -5,7 +5,8 @@ import cloudinary from "cloudinary";
 
 export const registerController = async (req, res) => {
   try {
-    const { name, email, password, address, city, country, phone } = req.body;
+    const { name, email, password, address, city, country, phone, answer } =
+      req.body;
 
     // validation
     if (
@@ -15,7 +16,8 @@ export const registerController = async (req, res) => {
       !address ||
       !city ||
       !country ||
-      !phone
+      !phone ||
+      !answer
     ) {
       res.status(400).send({
         success: false,
@@ -39,6 +41,7 @@ export const registerController = async (req, res) => {
       city,
       country,
       phone,
+      answer,
     });
     res.status(201).send({
       success: true,
@@ -238,6 +241,33 @@ export const updateProfilePicController = async (req, res) => {
       success: false,
       message: "Error in profile pic update API",
       error: error.message,
+    });
+  }
+};
+
+// reset password controller
+export const resetPasswordController = async (req, res) => {
+  try {
+    const { email, answer, newPassword } = req.body;
+    // find user
+    const user = await userModel.findOne({ email, answer });
+    if (!user) {
+      res.status(404).send({
+        success: false,
+        message: "Invalid user or answer",
+      });
+    }
+    user.password = newPassword;
+    await user.save();
+    res.status(200).send({
+      success: true,
+      message: "Password has been reset.",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in reset password API",
+      error,
     });
   }
 };
