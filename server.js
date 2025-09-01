@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
+import bodyParser from "body-parser";
 
 // dot env config
 dotenv.config();
@@ -27,7 +28,7 @@ const app = express();
 
 // middlewares
 app.use(helmet());
-
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
@@ -38,7 +39,7 @@ app.use((req, res, next) => {
 });
 
 // routes import
-import testRoute from "./routes/testRoute.js";
+
 import userRoute from "./routes/userRoute.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -46,7 +47,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import { paymentIntegrationController } from "./controllers/paymentIntegrationController.js";
 
 // route
-app.use("/api/v1", testRoute);
+
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/cat", categoryRoutes);
@@ -56,8 +57,6 @@ app.get("/", (req, res) => {
   return res.status(200).send("<h1>Welcome to node server</h1>");
 });
 
-//Payment integration route
-app.post("/init", paymentIntegrationController);
 // port
 const PORT = process.env.PORT || 8080;
 

@@ -11,7 +11,7 @@ export const createOrderController = async (req, res) => {
       shippingCharges,
       itemPrice,
       tax,
-      paymentInfo,
+      paymentStatus,
       user,
     } = req.body;
     //validation
@@ -27,7 +27,7 @@ export const createOrderController = async (req, res) => {
       shippingCharges,
       itemPrice,
       tax,
-      paymentInfo,
+      paymentStatus,
     });
 
     // stock update

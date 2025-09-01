@@ -8,6 +8,11 @@ import {
   getAllOrdersController,
   getSingleOrderController,
 } from "../controllers/orderController.js";
+import {
+  paymentIntegrationController,
+  paymentSuccessController,
+  sslcommerzIpnController,
+} from "../controllers/paymentIntegrationController.js";
 
 const router = express.Router();
 
@@ -19,6 +24,22 @@ router.get("/my-orders", isAuth, getAllOrderController);
 
 // get single orders
 router.get("/my-orders/:id", isAuth, getSingleOrderController);
+
+// payment checkout
+router.get("/init-payment/:orderId", paymentIntegrationController);
+
+////sslcommerz validation
+
+router.post("/payment/ipn", isAuth, sslcommerzIpnController);
+
+//Payment success failed and cancel route
+router.post("/payment/success/:orderId", paymentSuccessController);
+router.post("/payment/fail", (req, res) => {
+  res.status(200).send("<h2>This is payment failed page</h2>");
+});
+router.post("/payment/cancel", (req, res) => {
+  res.status(200).send("<h2>This is payment cancel page</h2>");
+});
 
 /// ===== Admin part ====///
 

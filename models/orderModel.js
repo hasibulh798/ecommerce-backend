@@ -48,9 +48,10 @@ const orderSchema = new mongoose.Schema(
       require: [true, "User is required"],
     },
     paidAt: Date,
-    paymentInfo: {
-      id: String,
-      status: String,
+
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "pending", "paid", "failed", "cancelled"],
     },
     itemPrice: {
       type: Number,
@@ -73,10 +74,25 @@ const orderSchema = new mongoose.Schema(
       enum: ["Processing", "Shipped", "Delivered"],
       default: "Processing",
     },
+    // 🔹 SSLCommerz Payment Info
+    tran_id: { type: String },
+    transactionDetails: { type: Object },
     deliveredAt: Date,
   },
+
   { timestamps: true }
 );
+
+orderSchema.pre("save", function (next) {
+  if (!this.paymentStatus) {
+    if (this.paymentMethod === "COD") {
+      this.paymentStatus = "unpaid";
+    } else if (this.paymentMethod === "Online") {
+      this.paymentStatus = "pending";
+    }
+  }
+  next();
+});
 
 const orderModel = mongoose.model("Order", orderSchema);
 
